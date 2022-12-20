@@ -1,0 +1,4 @@
+FROM mysql/mysql-server:8.0.27
+
+COPY ./databases/mysql/init-scripts /docker-entrypoint-initdb.d
+COPY ./databases/mysql/conf.d /etc/mysql/conf.d

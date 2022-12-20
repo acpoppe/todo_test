@@ -3,8 +3,12 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "start": "nx serve",
     "build": "nx build",
+    "docker-start-local": "docker-compose -f docker-compose.local.yml up -d --force-recreate",
+    "docker-start-local-m1": "docker-compose -f docker-compose.local.yml -f docker-compose.m1.yml up --build -d --force-recreate",
+    "docker-stop": "docker-compose -f docker-compose.local.yml -f docker-compose.m1.yml down",
+    "docker-stop-volume": "docker-compose down -v",
+    "start": "nx serve --host=0.0.0.0",
     "test": "nx test"
   },
   "private": true,
@@ -13,6 +17,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-is": "18.2.0",
+    "react-router-dom": "^6.4.5",
     "regenerator-runtime": "0.13.7",
     "styled-components": "5.3.5",
     "tslib": "^2.3.0"

@@ -1,0 +1,12 @@
+version: '3.9'
+
+services:
+  # Apps
+  todo:
+    platform: linux/x86_64
+
+  admin:
+    platform: linux/x86_64
+
+  db:
+    platform: linux/x86_64

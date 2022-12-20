@@ -1,0 +1,48 @@
+# BUILDER - Artifacts build for production
+FROM node:16.13.2-alpine3.15 AS builder
+
+ARG APP=unknown
+ARG NX_KEYCLOAK_HOST=unknown
+ARG NX_KEYCLOAK_PORT=
+ARG NX_API_PORT=
+
+WORKDIR /usr/src/app
+RUN chown node:node .
+USER node
+
+# General necessary data
+COPY --chown=node:node babel.config.json babel.config.json
+COPY --chown=node:node nx.json nx.json
+COPY --chown=node:node package.json package.json
+COPY --chown=node:node tsconfig.base.json tsconfig.base.json
+COPY --chown=node:node yarn.lock yarn.lock
+
+# Package specific data
+# need to copy over all packages because nx needs the project.json
+COPY --chown=node:node apps apps
+
+#RUN yarn --frozen-lockfile
+RUN yarn install
+#RUN yarn nx build --mode prod ${APP}
+RUN yarn run build ${APP}
+
+# RUNNER - Production image
+FROM nginx:stable-alpine
+
+ARG APP=unknown
+#ARG GITHUB_SHA=unknown
+ARG VERSION=unknown
+ARG NX_KEYCLOAK_HOST=unknown
+ARG NX_KEYCLOAK_PORT=
+ARG NX_API_PORT=
+
+# Force NODE_ENV to production as that is the expected state in a docker environment
+ENV NODE_ENV=production
+
+COPY --from=builder /usr/src/app/dist/apps/${APP} /usr/share/nginx/html
+COPY --from=builder /usr/src/app/apps/${APP}/nginx.conf /etc/nginx/conf.d/default.conf
+#RUN echo $GITHUB_SHA > /usr/share/nginx/html/sha.txt
+RUN echo $VERSION > /usr/share/nginx/html/version.txt
+RUN echo $NX_KEYCLOAK_HOST > /usr/share/nginx/html/NX_KEYCLOAK_HOST.txt
+RUN echo $NX_API_PORT > /usr/share/nginx/html/NX_API_PORT.txt
+RUN echo $NX_KEYCLOAK_PORT > /usr/share/nginx/html/NX_KEYCLOAK_PORT.txt

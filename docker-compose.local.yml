@@ -1,0 +1,123 @@
+version: '3.9'
+
+networks:
+  dev:
+    driver: bridge
+
+volumes:
+  db-data:
+    driver: local
+
+services:
+  # Apps
+  todo:
+    container_name: todo-todo
+    build:
+      args:
+        APP: todo
+        NX_KEYCLOAK_HOST: ${NX_KEYCLOAK_HOST}
+        NX_API_PORT: ${NX_API_PORT}
+      context: .
+      dockerfile: dockerfiles/Dockerfile.local
+    # hostname: allisonpoppe.com
+    ports:
+      - '3020:4200'
+    networks:
+      - dev
+    volumes:
+      #- ./dev/config/frontend/nginx:/usr/src/app/nginx
+      - type: bind
+        source: ./apps
+        target: /usr/src/app/apps
+      - type: bind
+        source: ./libs
+        target: /usr/src/app/libs
+      - type: bind
+        source: ./dist
+        target: /usr/src/app/dist
+
+  admin:
+    container_name: todo-admin
+    build:
+      args:
+        APP: admin
+        NX_KEYCLOAK_HOST: ${NX_KEYCLOAK_HOST}
+        NX_API_PORT: ${NX_API_PORT}
+      context: .
+      dockerfile: dockerfiles/Dockerfile.local
+    # hostname: allisonpoppe.com
+    ports:
+      - '3021:4200'
+    networks:
+      - dev
+    volumes:
+      #- ./dev/config/frontend/nginx:/usr/src/app/nginx
+      - type: bind
+        source: ./apps
+        target: /usr/src/app/apps
+      - type: bind
+        source: ./libs
+        target: /usr/src/app/libs
+      - type: bind
+        source: ./dist
+        target: /usr/src/app/dist
+
+  # Services
+  keycloak:
+    command: start-dev
+    container_name: todo-keycloak
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_DB_URL: ${KC_DB_URL}
+      KC_DB_USERNAME: ${KC_DB_USERNAME}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+      DB_URL: ${KC_DB_URL}
+      DB_USERNAME: ${KC_DB_USERNAME}
+      DB_PASSWORD: ${KC_DB_PASSWORD}
+      DB_HOSTNAME: ${KC_DB_HOSTNAME}
+      PROXY_ADDRESS_FORWARDING: ${PROXY_ADDRESS_FORWARDING}
+      KC_FEATURES: ${KC_FEATURES}
+    build:
+      context: .
+      dockerfile: services/keycloak/Dockerfile.keycloak
+    # restart: always
+    networks:
+      - dev
+    ports:
+      - '3022:8080'
+    depends_on:
+      - db
+    #     condition: service_healthy
+
+  # Persistence
+  db:
+    container_name: todo-db
+    build:
+      context: .
+      dockerfile: services/mysql/Dockerfile.mysql
+    command: --default-authentication-plugin=mysql_native_password
+    extra_hosts:
+      # check if this is needed
+      - 'host.docker.internal:host-gateway'
+    expose:
+      - '3306'
+    ports:
+      - '4306:3306'
+    volumes:
+      # - ./databases/mysql/init-scripts:/docker-entrypoint-initdb.d
+      # - ./databases/mysql/conf.d:/etc/mysql/conf.d
+      - db-data:/var/lib/mysql
+    networks:
+      - dev
+    # healthcheck:
+    #   # https://stackoverflow.com/questions/47710767/what-is-the-alternative-to-condition-form-of-depends-on-in-docker-compose-versio
+    #   test:
+    #     [
+    #       'CMD-SHELL',
+    #       'mysql --database=$$MYSQL_DATABASE --password=$$MYSQL_ROOT_PASSWORD --execute="SELECT count(table_name) > 1 FROM information_schema.tables;" --skip-column-names -B',
+    #     ]
+    #   start_period: '30s'
+    #   interval: '10s'
+    #   timeout: '10s'
+    #   retries: 15

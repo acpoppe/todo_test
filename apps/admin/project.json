@@ -1,7 +1,7 @@
 {
-  "name": "todo",
+  "name": "admin",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/todo/src",
+  "sourceRoot": "apps/admin/src",
   "projectType": "application",
   "targets": {
     "build": {
@@ -10,16 +10,16 @@
       "defaultConfiguration": "production",
       "options": {
         "compiler": "babel",
-        "outputPath": "dist/apps/todo",
-        "index": "apps/todo/src/index.html",
+        "outputPath": "dist/apps/admin",
+        "index": "apps/admin/src/index.html",
         "baseHref": "/",
-        "main": "apps/todo/src/main.tsx",
-        "polyfills": "apps/todo/src/polyfills.ts",
-        "tsConfig": "apps/todo/tsconfig.app.json",
-        "assets": ["apps/todo/src/favicon.ico", "apps/todo/src/assets"],
+        "main": "apps/admin/src/main.tsx",
+        "polyfills": "apps/admin/src/polyfills.ts",
+        "tsConfig": "apps/admin/tsconfig.app.json",
+        "assets": ["apps/admin/src/favicon.ico", "apps/admin/src/assets"],
         "styles": [],
         "scripts": [],
-        "webpackConfig": "apps/todo/webpack.config.js"
+        "webpackConfig": "@nrwl/react/plugins/webpack"
       },
       "configurations": {
         "development": {
@@ -31,8 +31,8 @@
         "production": {
           "fileReplacements": [
             {
-              "replace": "apps/todo/src/environments/environment.ts",
-              "with": "apps/todo/src/environments/environment.prod.ts"
+              "replace": "apps/admin/src/environments/environment.ts",
+              "with": "apps/admin/src/environments/environment.prod.ts"
             }
           ],
           "optimization": true,
@@ -48,16 +48,15 @@
       "executor": "@nrwl/webpack:dev-server",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "todo:build",
+        "buildTarget": "admin:build",
         "hmr": true
       },
       "configurations": {
         "development": {
-          "buildTarget": "todo:build:development",
-          "webpackConfig": "apps/todo/webpack.config.js"
+          "buildTarget": "admin:build:development"
         },
         "production": {
-          "buildTarget": "todo:build:production",
+          "buildTarget": "admin:build:production",
           "hmr": false
         }
       }
@@ -66,14 +65,14 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/todo/**/*.{ts,tsx,js,jsx}"]
+        "lintFilePatterns": ["apps/admin/**/*.{ts,tsx,js,jsx}"]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/todo/jest.config.ts",
+        "jestConfig": "apps/admin/jest.config.ts",
         "passWithNoTests": true
       }
     }
